@@ -1,0 +1,2 @@
+dataset,task,algo,params,recall
+ccnews-fp16,task1,diskann,"{'R': 64, 'LB': 100, 'B': 3, 'M': 4, 'T': 8, 'LS': ['200'], 'K': 30, 'distance_metric': 'l2', 'pca_dim': 192}",0.7865242424242425
