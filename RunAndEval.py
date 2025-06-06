@@ -336,7 +336,7 @@ def main(args):
             "--dist_fn", distance_metric,
             "--index_path_prefix", index_path_prefix,
             "--query_file", OUTPUTS['otest_queries_bin'],
-            "--gt_file", None,
+            "--gt_file", OUTPUTS['otest_knns_bin'],
             "-K", str(args.K),
             "-L", *args.LS,  
             "--result_path", SEARCH_DIR_PREFIX,
