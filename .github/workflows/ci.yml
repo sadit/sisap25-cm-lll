@@ -22,7 +22,7 @@ jobs:
       - name: Run Docker container
         run: |
           docker run --rm -v ${{ github.workspace }}:/workspace diskann-ci \
-            bash -c "cp /app/DiskANN/results.csv /workspace/results.csv || true"
+          python3 RunAndEval.py --results /workspace/results.csv --dataname ccnews-fp16 --R 64 --LB 100 --B 3 --M 4 --T 8 -LS 200 --K 30
 
       - name: Upload results
         uses: actions/upload-artifact@v4

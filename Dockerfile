@@ -31,7 +31,7 @@ RUN apt update && \
 # 设置工作目录
 WORKDIR /app
 
-# 复制本地 DiskANN 项目到容器（假设你本地已开发/修改）
+# 复制本地 DiskANN 项目到容器
 COPY . /app/DiskANN
 
 WORKDIR /app/DiskANN
