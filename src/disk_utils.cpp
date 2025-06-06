@@ -1252,7 +1252,6 @@ int build_disk_index(const char *dataFilePath, const char *indexFilePath, const 
             created_temp_file_for_processed_data = true;
 
             std::remove(base_file.c_str());  // 删掉原始的base文件
-
         }
     }
 

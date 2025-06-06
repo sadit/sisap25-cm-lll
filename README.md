@@ -33,7 +33,7 @@ pip install -r requirements.txt
 **3. Build the C++ code**
 
 ```bash
-mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j 
+mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j && cd ..
 ```
 
 **4. Prepare the data**
@@ -89,9 +89,11 @@ docker run -it --rm \
 | --M          | build_DRAM_budget                                   | 4                               |
 | --T          | Number of threads                                   | 8                               |
 | -LS          | List of L parameters for search (multiple allowed)  | 30 40 50 100 150 200            |
-| -K           | Number of nearest neighbors to search               | 30                              |
-
+| --K          | Number of nearest neighbors to search               | 30                              |
+| --RD         | The target dimension of dimensionality reduction    | 192                             |
 ---
+
+After verification, the default values we set can make the results of the PubMed23 dataset meet the requirements of the Sisap2025 Challenge Task 1.
 
 ## Output
 

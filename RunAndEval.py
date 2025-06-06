@@ -122,7 +122,7 @@ def export_queries(h5_path, data_key, out_bin, align_bytes=64):
 
 from sklearn.preprocessing import normalize
 
-def export_full_data_with_pca(h5_path, data_key, out_bin, pca_model_path, align_bytes=64, max_sample_size=100000, pca_dim=192):
+def export_full_data_with_pca(h5_path, data_key, out_bin, pca_model_path, pca_dim=192, align_bytes=64, max_sample_size=100000):
     """
     Export data to .bin format, with PCA and normalization, batch processing.
     """
@@ -180,7 +180,6 @@ def export_queries_with_pca(h5_path, data_key, out_bin, pca_model_path, align_by
     """
     Export query data with PCA and normalization.
     """
-    from sklearn.preprocessing import normalize
     pca = load(pca_model_path)
     with h5py.File(h5_path, 'r') as f:
         dataset = f[data_key]
@@ -208,6 +207,7 @@ def export_queries_with_pca(h5_path, data_key, out_bin, pca_model_path, align_by
                 fout.write(vec.astype(np.float32).tobytes())
                 if pad:
                     fout.write(b'\x00' * pad)
+    os.remove(pca_model_path)
 
 def export_gt_bin(h5_path, knns_key, dists_key, out_bin, index_base=1):
     """
@@ -282,7 +282,7 @@ def main(args):
     if not os.path.exists(OUTPUTS['train_bin']):
         print(f"[INFO] Exporting {DATA_KEYS['train']} → {OUTPUTS['train_bin']}")
         # export_full_data(h5_file, DATA_KEYS['train'], OUTPUTS['train_bin'])
-        export_full_data_with_pca(h5_file, DATA_KEYS['train'], OUTPUTS['train_bin'], PCA_MODEL_PATH)
+        export_full_data_with_pca(h5_file, DATA_KEYS['train'], OUTPUTS['train_bin'], PCA_MODEL_PATH, args.RD)
     else:
         print(f"[INFO] {OUTPUTS['train_bin']} already exists, skipping export")
 
@@ -320,6 +320,8 @@ def main(args):
         print(f"[INFO] {index_path_prefix}_disk.index already exists, skipping build")
     build_end = time.time()
     build_time = build_end - build_start
+    # 删除 train.bin
+    os.remove(OUTPUTS['train_bin'])
 
     # 5. Search otest_queries
     os.makedirs(SEARCH_DIR, exist_ok=True)
@@ -334,7 +336,7 @@ def main(args):
             "--dist_fn", distance_metric,
             "--index_path_prefix", index_path_prefix,
             "--query_file", OUTPUTS['otest_queries_bin'],
-            "--gt_file", OUTPUTS['otest_knns_bin'],
+            "--gt_file", None,
             "-K", str(args.K),
             "-L", *args.LS,  
             "--result_path", SEARCH_DIR_PREFIX,
@@ -370,6 +372,7 @@ def main(args):
     "T": args.T,
     "LS": args.LS,
     "K": args.K,
+    "RD": args.RD,
     "distance_metric": distance_metric,
     }
     params_str = str(params)
@@ -390,18 +393,6 @@ def main(args):
         writer.writerow(d)
 
 if __name__ == "__main__":
-    
-    LOG_FILE = "sys_usage.log"
-    FILE_CHANGE_LOG = "file_changes.log"
-    INTERVAL = 2
-    WATCH_DIR = os.path.expanduser("./data/build")
-    os.makedirs(WATCH_DIR, exist_ok=True)
-
-    stop_event = Event()
-    monitor_proc = Process(target=monitor_resources, args=(LOG_FILE, INTERVAL, stop_event, WATCH_DIR))
-    file_monitor_proc = Process(target=monitor_file_changes, args=(WATCH_DIR, FILE_CHANGE_LOG, INTERVAL, stop_event))
-    monitor_proc.start()
-    file_monitor_proc.start()
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -427,7 +418,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--B",
         help='Parameter B, search_DRAM_budget for DiskANN',
-        default=3
+        default=0.02
     )  
     parser.add_argument(
         "--M",
@@ -450,17 +441,13 @@ if __name__ == "__main__":
         "--K",
         help='Parameter K, the number of nearest neighbors search',
         default=30
-    )      
+    )
+    parser.add_argument(
+        "--RD",
+        help='Parameter RD, the target dimensions for PCA',
+        type=int,
+        default=192
+    )
     args = parser.parse_args()
 
-    print("[INFO] Resource monitoring started, main program will start in 10 seconds...")
-    time.sleep(10)
-
-    try:
-        main(args)
-    finally:
-        stop_event.set()
-        monitor_proc.join()
-        file_monitor_proc.join()
-        print("[INFO] Resource monitoring stopped")
-    # main()
+    main(args)
