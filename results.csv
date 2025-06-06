@@ -1,2 +1,0 @@
-dataset,task,algo,buildtime,querytime,params,recall
-ccnews-fp16,task1,diskann,424.0790250301361,146.20850086212158,"{'R': 64, 'LB': 100, 'B': 0.02, 'M': 4, 'T': 8, 'LS': ['200'], 'K': 30, 'distance_metric': 'l2'}",0.780069696969697
