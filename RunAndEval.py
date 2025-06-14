@@ -236,15 +236,15 @@ def export_gt_bin(h5_path, knns_key, dists_key, out_bin, index_base=1):
 
 def main(args):
     DATASET_NAME = args.dataname
-    H5_DIR = f'./data/{DATASET_NAME}/task1/'
-    H5_FILE = f'benchmark-dev-{DATASET_NAME}.h5'
+    H5_DIR = f'/data/{DATASET_NAME}/task1/'
+    H5_FILE = f'benchmark-eval-{DATASET_NAME}.h5'
     h5_file = os.path.join(H5_DIR, H5_FILE)
     
-    if not os.path.exists(h5_file):
-        download_h5_if_needed(h5_file, DATASET_NAME)
+    #if not os.path.exists(h5_file):
+    #    download_h5_if_needed(h5_file, DATASET_NAME)
            
-    BUILD_DIR = os.path.join(H5_DIR, 'build')
-    SEARCH_DIR = os.path.join(H5_DIR, 'search_results')
+    BUILD_DIR = '/results/build'
+    SEARCH_DIR = '/results/search_results'
     print(f"[INFO] H5_FILE: {h5_file}")
     DATA_KEYS = {
         'train': 'train',
@@ -358,7 +358,10 @@ def main(args):
         print(f"[INFO] Calculating recall")
         gt_I = load_uint32_bin(OUTPUTS['otest_knns_bin'])
         search_results = load_uint32_bin(os.path.join(SEARCH_DIR,DATASET_NAME+'_200_idx_uint32.bin')) #SEARCH_DIR+DATASET_NAME+'_200_idx_uint32.bin'
+
         recall = get_recall(search_results, gt_I, k=30)
+        with h5py.File("/results/knns-task1.h5", "w") as fout:
+            fout.create_dataset('knns', search_results.shape, dtype=search_results.dtype)[:] = search_results + 1
         print(f"[INFO] Recall: {recall:.4f}")
     else:
         print(f"[WARN] {OUTPUTS['otest_knns_bin']} not found, cannot calculate recall")
